@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <div class="jumbotron text-center">
+    <h1>SOFTWARE EMPRESARIAL</h1>
+    <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Fuga molestiae quam sed nulla qui a earum facilis et, quisquam dolorum modi, rerum veritatis illum assumenda facere pariatur. Ipsa, esse, cum.</p>
+    
+    <div>
+      <form action="entrenar" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label>Seleccione un archivo de notas</label>
+          <input type="file" name="archivo" class="form-control" value={{request.form.archivo}}>
+        </div>
+        <div class="form-group">
+          <label>Seleccione criterio de finalizacion</label>
+          <select id="fin" name="fin">
+              <option value="1">Opcion 1</option>
+              <option value="2">Opcion 2</option>
+              <option value="3">Opcion 3</option>
+          </select>
+   
+        </div>
+        <div class="form-group">
+          <label>Seleccion padres</label>
+          <select id="padre" name="padre">
+            <option value="1">Opcion 1</option>
+            <option value="2">Opcion 2</option>
+            <option value="3">Opcion 3</option>
+        </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
