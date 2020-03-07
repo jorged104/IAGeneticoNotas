@@ -20,14 +20,14 @@ def getprimero(val):
     return val[0]
 
 
-def test():
+def test(padres,crit):
     generacion = 0
     p = Poblacion()
-    fin = Criterio(p)
+    fin = Criterio(p,crit,generacion)
     while (fin == None):
         padres = Seleccionar(p,1)
         p = Emparejar(padres)
-        fin = Criterio(p)
+        fin = Criterio(p,crit,generacion)
         generacion += 1
         #print(generacion)
     print("SOLUCION: ", fin)
@@ -41,11 +41,13 @@ def clientes():
 @app.route("/entrenar",methods=['POST'])
 def entrenar():
     global arreglo
+    padres = int(request.form['padre'])
+    criterio = int(request.form['fin'])
     f = request.files['archivo']
     f.save(os.path.join("./archivo", "archivo.csv"))
     data = pd.read_csv(os.path.join("./archivo","archivo.csv"))
     arreglo = data.to_numpy()
-    test()
+    test(padres,criterio)
     return "hoña"
 
 
@@ -57,15 +59,33 @@ def Poblacion():
     #print(result)    
     return result 
 
-def Criterio(po):
+def Criterio(po,i,generacion):
     result = None
     fit = []
     fitnesFinal = 15
-    for i in range(16):
-        pts = Evaluar(po[i])
-        fit.append(pts)
-        if(pts < fitnesFinal):
-            return po[i]
+    generacionFinal = 100
+    fitnesPromedio = 35
+    #Primer fitnes en cumplir criterio
+    if i == 1:
+        for i in range(16):
+            pts = Evaluar(po[i])
+            fit.append(pts)
+            if(pts < fitnesFinal):
+                return po[i]
+    # GENEACION MAXIMA
+    if i==2:
+        if generacion >= generacionFinal:
+            return po[0]
+    # Fitnes Promedio
+    promedio = 0
+    if i==3:
+        for i in range(16):
+            pts = Evaluar(po[i])
+            promedio += pts
+        promedio /= len(po)    
+        print("PROMEDIO :" , promedio)
+        if promedio < fitnesPromedio:
+            return po[0]
     return None
 
             
@@ -98,6 +118,28 @@ def Seleccionar(p,i):
         resultado = resultado[:8]
         resultado = list(map(getprimero,resultado))
         return resultado
+    #OCho elegidos al azar
+    if(i == 2):
+        lista = []
+        while len(lista) < 8:
+            numrandom = random.randint(0,16)
+            if numrandom not in lista:
+                lista.append(numrandom)
+                resultado.append(p[numrandom])
+        return resultado
+    #Los mejores padres tienen mas probabilidad de ser elegidos 70% mejores 80% peores
+    if(i == 3):
+        for item in p:
+            resultado.append((item,Evaluar(item)))
+        resultado.sort(key= ordenarSegundo )
+        mejores = resultado[:8]
+        mejores = list(map(getprimero,resultado))
+        peores = resultado[8:]
+        peores = list(map(getprimero,resultado))
+        # hijo[0] = p1[0] if random.uniform(0,1)>0.5 else p2[0]
+        for i in range(8):
+            resultado[i] = mejores[i] if random.uniform(0,1)>0.70 else peores[i]
+        return resultado    
     return None
 
 def Emparejar(po):
