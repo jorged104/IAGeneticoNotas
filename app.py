@@ -1,6 +1,6 @@
 from flask import Flask, render_template,  redirect, url_for, escape, request
 import json
-import datetime
+from datetime import datetime
 import sys
 import os
 import pandas as pd
@@ -32,7 +32,7 @@ def test(padres,crit):
         #print(generacion)
     print("SOLUCION: ", fin)
     print("GENERACION: ", generacion)
-    return "hola"
+    return (generacion,fin)
 
 @app.route("/home")
 def clientes():
@@ -47,8 +47,25 @@ def entrenar():
     f.save(os.path.join("./archivo", "archivo.csv"))
     data = pd.read_csv(os.path.join("./archivo","archivo.csv"))
     arreglo = data.to_numpy()
-    test(padres,criterio)
-    return "hoña"
+    
+    dateTimeObj = datetime.now()
+    fecha = dateTimeObj.strftime("%d %b %Y")
+    hora = dateTimeObj.strftime("%H:%M:%S")
+    nombre = f.filename
+    sol = test(padres,criterio)
+    estructura = {
+        "fecha": fecha,
+        "hora": hora,
+        "nombre" : nombre,
+        "fin" : criterio,
+        "padres" : padres,
+        "gens" : sol[0],
+        "solucion" : sol[1] }
+    
+    text = open(os.path.join("./archivo","log.txt"), 'a')
+    text.write(",\n"+json.dumps(estructura))
+    text.close()
+    return  redirect(url_for('mostrar'))
 
 
 
@@ -174,6 +191,13 @@ def Mutar(hijo):
     hijo[pos] += random.uniform(-0.3,0.3) 
     return hijo
 
+@app.route("/log")
+def mostrar():
+    text = open(os.path.join("./archivo","log.txt"), 'r')
+    content = "[" + text.read() + "]"
+    text.close()
+    y = json.loads(content)
+    return render_template('historial.html', text=y)
 
 #@app.route("/ingresoCliente",methods=['POST'])
 #def ingresoclientes(): 
